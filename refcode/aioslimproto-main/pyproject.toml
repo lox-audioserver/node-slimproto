@@ -1,0 +1,133 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=62.3"]
+
+[project]
+authors = [
+  {name = "Marcel van der Veldt", email = "marcelveldt@users.noreply.github.com"},
+]
+classifiers = [
+  "Environment :: Console",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+  "aiohttp>=3.9.2",
+  "pillow",
+]
+description = "Python module to talk to Logitech Squeezebox players directly (without Logitech server)."
+license = {text = "Apache-2.0"}
+name = "aioslimproto"
+readme = "README.md"
+requires-python = ">=3.11"
+# The version is set by GH action on release!
+version = "0.0.0"
+
+[project.optional-dependencies]
+test = [
+  "codespell==2.4.1",
+  "isort==6.0.1",
+  "mypy==1.18.2",
+  "pre-commit==4.3.0",
+  "pre-commit-hooks==6.0.0",
+  "pytest==8.4.1",
+  "pytest-asyncio==1.2.0",
+  "pytest-aiohttp==1.1.0",
+  "pytest-cov==7.0.0",
+  "ruff==0.12.8",
+  "safety==3.6.2",
+  "tomli==2.2.1",
+]
+
+[tool.codespell]
+# ignore-words-list = ""
+
+[tool.setuptools]
+include-package-data = true
+platforms = ["any"]
+zip-safe = false
+
+[tool.setuptools.package-data]
+aioslimproto = ["font/**"]
+
+[tool.setuptools.packages.find]
+include = ["aioslimproto*"]
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_any_generics = false # TEMPORARY DISABLED
+disallow_incomplete_defs = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = true
+disallow_untyped_defs = true
+follow_imports = "normal"
+ignore_missing_imports = true
+no_implicit_optional = true
+no_implicit_reexport = true
+platform = "linux"
+python_version = "3.11"
+strict_optional = true
+warn_incomplete_stub = true
+warn_no_return = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+addopts = "--cov"
+asyncio_mode = "auto"
+
+[tool.ruff]
+fix = true
+line-length = 88
+show-fixes = true
+target-version = "py311"
+
+[tool.ruff.lint.pydocstyle]
+# Use Google-style docstrings.
+convention = "pep257"
+
+[tool.ruff.lint]
+ignore = [
+  "ANN002", # Just annoying, not really useful
+  "ANN003", # Just annoying, not really useful
+  "ANN401", # Opinioated warning on disallowing dynamically typed expressions
+  "COM812", # May conflict with formatter
+  "D203", # Conflicts with other rules
+  "D213", # Conflicts with other rules
+  "D417", # False positives in some occasions
+  "EM101", # Just annoying, not really useful
+  "EM102", # Just annoying, not really useful
+  "FIX002", # Just annoying, not really useful
+  "PLR2004", # Just annoying, not really useful
+  "PD011", # Just annoying, not really useful
+  "TC001", # Just annoying, not really useful
+  "TC003", # Just annoying, not really useful
+  "S101", # assert is often used to satisfy type checking
+  "TD002", # Just annoying, not really useful
+  "TD003", # Just annoying, not really useful
+  "TD004", # Just annoying, not really useful
+]
+
+select = ["ALL"]
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
+mark-parentheses = false
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+force-sort-within-sections = true
+known-first-party = ["aioslimproto"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 25
+
+[tool.ruff.lint.pylint]
+max-args = 10
+max-branches = 25
+max-returns = 15
+max-statements = 50

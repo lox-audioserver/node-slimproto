@@ -3,17 +3,15 @@ export class SlimProtoVolume {
   maximum = 100;
   step = 1;
 
-  // Map taken from squeezebox sources
   private static readonly oldMap: number[] = [
     0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 5, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 13, 14, 15,
     16, 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32, 33, 34, 35, 37,
     38, 39, 40, 42, 43, 44, 46, 47, 48, 50, 51, 53, 54, 56, 57, 59, 60, 61, 63, 65,
     66, 68, 69, 71, 72, 74, 75, 77, 79, 80, 82, 84, 85, 87, 89, 90, 92, 94, 96, 97,
     99, 101, 103, 104, 106, 108, 110, 112, 113, 115, 117, 119, 121, 123, 125, 127,
-    128
+    128,
   ];
 
-  // Gain parameters used by squeezebox
   private readonly totalVolumeRange = -50; // dB
   private readonly stepPoint = -1;
   private readonly stepFraction = 1;

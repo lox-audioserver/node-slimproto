@@ -1,17 +1,17 @@
 export enum EventType {
-  PLAYER_UPDATED = "player_updated",
-  PLAYER_HEARTBEAT = "player_heartbeat",
-  PLAYER_CONNECTED = "player_connected",
-  PLAYER_DISCONNECTED = "player_disconnected",
-  PLAYER_NAME_RECEIVED = "player_name_received",
-  PLAYER_DISPLAY_RESOLUTION = "player_display_resolution",
-  PLAYER_DECODER_READY = "player_decoder_ready",
-  PLAYER_DECODER_ERROR = "player_decoder_error",
-  PLAYER_OUTPUT_UNDERRUN = "player_output_underrun",
-  PLAYER_BUFFER_READY = "player_buffer_ready",
-  PLAYER_CLI_EVENT = "player_cli_event",
-  PLAYER_BTN_EVENT = "player_btn_event",
-  PLAYER_PRESETS_UPDATED = "player_presets_updated"
+  PLAYER_UPDATED = 'player_updated',
+  PLAYER_HEARTBEAT = 'player_heartbeat',
+  PLAYER_CONNECTED = 'player_connected',
+  PLAYER_DISCONNECTED = 'player_disconnected',
+  PLAYER_NAME_RECEIVED = 'player_name_received',
+  PLAYER_DISPLAY_RESOLUTION = 'player_display_resolution',
+  PLAYER_DECODER_READY = 'player_decoder_ready',
+  PLAYER_DECODER_ERROR = 'player_decoder_error',
+  PLAYER_OUTPUT_UNDERRUN = 'player_output_underrun',
+  PLAYER_BUFFER_READY = 'player_buffer_ready',
+  PLAYER_CLI_EVENT = 'player_cli_event',
+  PLAYER_BTN_EVENT = 'player_btn_event',
+  PLAYER_PRESETS_UPDATED = 'player_presets_updated',
 }
 
 export interface SlimEvent<T = unknown> {
@@ -21,42 +21,42 @@ export interface SlimEvent<T = unknown> {
 }
 
 export const DEVICE_TYPE: Record<number, string> = {
-  2: "squeezebox",
-  3: "softsqueeze",
-  4: "squeezebox2",
-  5: "transporter",
-  6: "softsqueeze3",
-  7: "receiver",
-  8: "squeezeslave",
-  9: "controller",
-  10: "boom",
-  11: "softboom",
-  12: "squeezeplay",
-  100: "squeezeesp32"
+  2: 'squeezebox',
+  3: 'softsqueeze',
+  4: 'squeezebox2',
+  5: 'transporter',
+  6: 'softsqueeze3',
+  7: 'receiver',
+  8: 'squeezeslave',
+  9: 'controller',
+  10: 'boom',
+  11: 'softboom',
+  12: 'squeezeplay',
+  100: 'squeezeesp32',
 };
 
 export enum PlayerState {
-  PLAYING = "playing",
-  STOPPED = "stopped",
-  PAUSED = "paused",
-  BUFFERING = "buffering",
-  BUFFER_READY = "buffer_ready"
+  PLAYING = 'playing',
+  STOPPED = 'stopped',
+  PAUSED = 'paused',
+  BUFFERING = 'buffering',
+  BUFFER_READY = 'buffer_ready',
 }
 
 export enum TransitionType {
-  NONE = "0",
-  CROSSFADE = "1",
-  FADE_IN = "2",
-  FADE_OUT = "3",
-  FADE_IN_OUT = "4"
+  NONE = '0',
+  CROSSFADE = '1',
+  FADE_IN = '2',
+  FADE_OUT = '3',
+  FADE_IN_OUT = '4',
 }
 
 export enum VisualisationType {
-  NONE = "none",
-  SPECTRUM_ANALYZER = "spectrum_analyzer",
-  VU_METER_ANALOG = "vu_meter_analog",
-  VU_METER_DIGITAL = "vu_meter_digital",
-  WAVEFORM = "waveform"
+  NONE = 'none',
+  SPECTRUM_ANALYZER = 'spectrum_analyzer',
+  VU_METER_ANALOG = 'vu_meter_analog',
+  VU_METER_DIGITAL = 'vu_meter_digital',
+  WAVEFORM = 'waveform',
 }
 
 export enum RemoteCode {
@@ -90,7 +90,7 @@ export enum RemoteCode {
   REPEAT = 1988704455,
   NOW_PLAYING = 1988720775,
   SIZE = 1988753415,
-  BRIGHTNESS = 1988691195
+  BRIGHTNESS = 1988691195,
 }
 
 export enum ButtonCode {
@@ -110,72 +110,72 @@ export enum ButtonCode {
   PAUSE = 131095,
   FORWARD = 131101,
   VOLUME_DOWN = 131081,
-  POWER_RELEASE = 131082
+  POWER_RELEASE = 131082,
 }
 
 export const PCM_SAMPLE_SIZE: Record<number, Buffer> = {
-  8: Buffer.from("0"),
-  16: Buffer.from("1"),
-  20: Buffer.from("2"),
-  32: Buffer.from("3"),
-  24: Buffer.from("4"),
-  0: Buffer.from("?")
+  8: Buffer.from('0'),
+  16: Buffer.from('1'),
+  20: Buffer.from('2'),
+  32: Buffer.from('3'),
+  24: Buffer.from('4'),
+  0: Buffer.from('?'),
 };
 
 export const PCM_SAMPLE_RATE: Record<number, Buffer> = {
-  11000: Buffer.from("0"),
-  22000: Buffer.from("1"),
-  44100: Buffer.from("3"),
-  48000: Buffer.from("4"),
-  8000: Buffer.from("5"),
-  12000: Buffer.from("6"),
-  16000: Buffer.from("7"),
-  24000: Buffer.from("8"),
-  88200: Buffer.from(":"),
-  96000: Buffer.from("9"),
-  176400: Buffer.from(";"),
-  192000: Buffer.from("<"),
-  352800: Buffer.from("="),
-  384000: Buffer.from(">"),
-  0: Buffer.from("?")
+  11000: Buffer.from('0'),
+  22000: Buffer.from('1'),
+  44100: Buffer.from('3'),
+  48000: Buffer.from('4'),
+  8000: Buffer.from('5'),
+  12000: Buffer.from('6'),
+  16000: Buffer.from('7'),
+  24000: Buffer.from('8'),
+  88200: Buffer.from(':'),
+  96000: Buffer.from('9'),
+  176400: Buffer.from(';'),
+  192000: Buffer.from('<'),
+  352800: Buffer.from('='),
+  384000: Buffer.from('>'),
+  0: Buffer.from('?'),
 };
 
 export const CODEC_MAPPING: Record<string, string> = {
-  "audio/mp3": "mp3",
-  "audio/mpeg": "mp3",
-  "audio/flac": "flc",
-  "audio/x-flac": "flc",
-  "audio/wma": "wma",
-  "audio/ogg": "ogg",
-  "audio/oga": "ogg",
-  "audio/aac": "aac",
-  "audio/aacp": "aac",
-  "audio/alac": "alc",
-  "audio/wav": "pcm",
-  "audio/x-wav": "pcm",
-  "audio/dsf": "dsf",
-  "audio/pcm,": "pcm"
+  'audio/mp3': 'mp3',
+  'audio/mpeg': 'mp3',
+  'audio/flac': 'flc',
+  'audio/x-flac': 'flc',
+  'audio/wma': 'wma',
+  'audio/ogg': 'ogg',
+  'audio/oga': 'ogg',
+  'audio/aac': 'aac',
+  'audio/aacp': 'aac',
+  'audio/alac': 'alc',
+  'audio/wav': 'pcm',
+  'audio/x-wav': 'pcm',
+  'audio/dsf': 'dsf',
+  'audio/pcm,': 'pcm',
 };
 
 export const FORMAT_BYTE: Record<string, Buffer> = {
-  pcm: Buffer.from("p"),
-  mp3: Buffer.from("m"),
-  flc: Buffer.from("f"),
-  wma: Buffer.from("w"),
-  ogg: Buffer.from("o"),
-  aac: Buffer.from("a"),
-  alc: Buffer.from("l"),
-  dsf: Buffer.from("p"),
-  dff: Buffer.from("p"),
-  aif: Buffer.from("p")
+  pcm: Buffer.from('p'),
+  mp3: Buffer.from('m'),
+  flc: Buffer.from('f'),
+  wma: Buffer.from('w'),
+  ogg: Buffer.from('o'),
+  aac: Buffer.from('a'),
+  alc: Buffer.from('l'),
+  dsf: Buffer.from('p'),
+  dff: Buffer.from('p'),
+  aif: Buffer.from('p'),
 };
 
 export const PLAYMODE_MAP: Record<PlayerState, string> = {
-  [PlayerState.STOPPED]: "stop",
-  [PlayerState.PLAYING]: "play",
-  [PlayerState.BUFFER_READY]: "play",
-  [PlayerState.BUFFERING]: "play",
-  [PlayerState.PAUSED]: "pause"
+  [PlayerState.STOPPED]: 'stop',
+  [PlayerState.PLAYING]: 'play',
+  [PlayerState.BUFFER_READY]: 'play',
+  [PlayerState.BUFFERING]: 'play',
+  [PlayerState.PAUSED]: 'pause',
 };
 
 export interface MediaMetadata {

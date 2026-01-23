@@ -1,11 +1,11 @@
-# lox-slimproto
+# @lox-audioserver/node-slimproto
 
 SlimProto server/client utilities for controlling Squeezebox-compatible players from Node.js. This is a TypeScript port of aioslimproto with the full server + player-control implementation used by lox-audioserver.
 
 ## Quick start (server)
 
 ```ts
-import { SlimServer, EventType } from "lox-slimproto";
+import { SlimServer, EventType } from "@lox-audioserver/node-slimproto";
 
 const server = new SlimServer();
 await server.start();
@@ -23,7 +23,7 @@ process.on("SIGINT", async () => {
 ## Quick start (playback control)
 
 ```ts
-import { SlimServer } from "lox-slimproto";
+import { SlimServer } from "@lox-audioserver/node-slimproto";
 
 const server = new SlimServer();
 await server.start();

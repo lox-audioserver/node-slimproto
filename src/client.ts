@@ -66,6 +66,9 @@ export class SlimClient {
   private _autoPlay = false;
   private _heartbeatTimer: NodeJS.Timeout | null = null;
   private _heartbeatId = 0;
+  private readonly heartbeatSentAt = new Map<number, number>();
+  private pendingClockSync = new Map<number, (ok: boolean) => void>();
+  private clockBase: { serverTimeMs: number; jiffies: number; rttMs: number; updatedAtMs: number } | null = null;
 
   constructor(socket: net.Socket, callback: SlimClientCallback) {
     this.socket = socket;
@@ -151,6 +154,69 @@ export class SlimClient {
 
   public get lastHeartbeatAt(): number | null {
     return this._lastTimestamp || null;
+  }
+
+  /**
+   * Best-effort mapping between server wall clock time (ms) and player jiffies.
+   * Derived from `strm t` / `stat STMt` heartbeat exchange.
+   */
+  public get clockSync(): { serverTimeMs: number; jiffies: number; rttMs: number; updatedAtMs: number } | null {
+    return this.clockBase;
+  }
+
+  /**
+   * Estimate the player jiffies value at the given server time.
+   * Returns a 32-bit unsigned timestamp suitable for `unpauseAt`.
+   */
+  public estimateJiffiesAt(serverTimeMs: number): number {
+    if (!this.clockBase) {
+      return Math.max(0, Math.round(this._jiffies + (serverTimeMs - Date.now()))) >>> 0;
+    }
+    const delta = Math.round(serverTimeMs - this.clockBase.serverTimeMs);
+    const target = this.clockBase.jiffies + delta;
+    // Keep within uint32 domain (SlimProto uses 32-bit timestamps).
+    return (target >>> 0);
+  }
+
+  /**
+   * Request an immediate clock sync sample (one `strm t` roundtrip).
+   * Resolves true when the matching STMt arrives, false on timeout or disconnect.
+   */
+  public async requestClockSync(timeoutMs = 800): Promise<boolean> {
+    if (!this._connected) return false;
+    this._heartbeatId += 1;
+    const id = this._heartbeatId;
+    const sentAt = Date.now();
+    this.heartbeatSentAt.set(id, sentAt);
+    // Clean up old send timestamps to avoid unbounded growth.
+    for (const [key, value] of this.heartbeatSentAt) {
+      if (sentAt - value > 60_000) {
+        this.heartbeatSentAt.delete(key);
+      }
+    }
+    const result = await new Promise<boolean>((resolve) => {
+      const timeout = setTimeout(() => {
+        this.pendingClockSync.delete(id);
+        resolve(false);
+      }, Math.max(50, timeoutMs));
+      timeout.unref?.();
+      this.pendingClockSync.set(id, (ok) => {
+        clearTimeout(timeout);
+        this.pendingClockSync.delete(id);
+        resolve(ok);
+      });
+      void this.sendStrm({
+        command: 't',
+        autostart: '0',
+        flags: 0,
+        replayGain: id,
+      }).catch(() => {
+        clearTimeout(timeout);
+        this.pendingClockSync.delete(id);
+        resolve(false);
+      });
+    });
+    return result;
   }
 
   public async stop(): Promise<void> {
@@ -316,14 +382,26 @@ export class SlimClient {
 
     this._autoPlay = autostart;
 
+    const isSyncGroup = parsed.searchParams.has('sync') && parsed.searchParams.has('expect');
+    // For sync-groups we want BUFFER_READY quickly so we can do coordinated unpause.
+    // With MP3 @ 256kbps, 200KB threshold can take ~6s to fill; lowering keeps groups snappy.
+    const thresholdKb = isSyncGroup ? 64 : 200;
+    // For sync-groups we prefer a bit more output buffer to avoid early underruns,
+    // especially with lossless streams or weaker WiFi links.
+    const outputThreshold = isSyncGroup ? 50 : 20;
+
     await this.sendStrm({
       command: 's',
       codecDetails,
       autostart: autostart ? '3' : '0',
       serverPort: port,
       serverIp: ipToInt(ipAddress),
-      threshold: 20,
-      outputThreshold: 5,
+      // Amount of input buffer (KB) before autostart or BUFFER_READY notification.
+      // Match aioslimproto defaults (200KB) for normal playback, but reduce for sync-groups.
+      threshold: thresholdKb,
+      // Amount of output buffer data before playback starts, in tenths of a second.
+      // Increase to reduce early underruns (tradeoff: more startup latency).
+      outputThreshold,
       transDuration: transitionDuration,
       transType: transition,
       flags: scheme === 'https' ? 0x20 : 0x00,
@@ -636,11 +714,42 @@ export class SlimClient {
 
   private processStatHeartbeat(data: Buffer): void {
     if (data.length < 47) return;
+    const now = Date.now();
     const jiffies = data.readUInt32BE(21);
     const elapsedMs = data.readUInt32BE(39);
+    const serverHeartbeat = data.readUInt32BE(43);
     this._jiffies = jiffies;
     this._elapsedMs = elapsedMs;
-    this._lastTimestamp = Date.now();
+    this._lastTimestamp = now;
+
+    const sentAt = this.heartbeatSentAt.get(serverHeartbeat);
+    if (typeof sentAt === 'number') {
+      const rttMs = Math.max(0, now - sentAt);
+      const midTime = sentAt + rttMs / 2;
+      const shouldReplace =
+        !this.clockBase ||
+        now - this.clockBase.updatedAtMs > 10_000 ||
+        rttMs <= this.clockBase.rttMs;
+      if (shouldReplace) {
+        // Prefer the lowest-RTT sample; it yields the best wallclock<->jiffies mapping.
+        this.clockBase = {
+          serverTimeMs: midTime,
+          jiffies,
+          rttMs,
+          updatedAtMs: now,
+        };
+      }
+      this.heartbeatSentAt.delete(serverHeartbeat);
+      const pending = this.pendingClockSync.get(serverHeartbeat);
+      if (pending) {
+        pending(true);
+      }
+    } else {
+      const pending = this.pendingClockSync.get(serverHeartbeat);
+      if (pending) {
+        pending(true);
+      }
+    }
     this.signalEvent(EventType.PLAYER_HEARTBEAT);
   }
 
@@ -754,15 +863,11 @@ export class SlimClient {
     if (this._heartbeatTimer) {
       clearInterval(this._heartbeatTimer);
     }
+    // Send one immediately to establish a clock base quickly.
+    void this.requestClockSync().catch(() => undefined);
     this._heartbeatTimer = setInterval(() => {
       if (!this._connected) return;
-      this._heartbeatId += 1;
-      void this.sendStrm({
-        command: 't',
-        autostart: '0',
-        flags: 0,
-        replayGain: this._heartbeatId,
-      });
+      void this.requestClockSync().catch(() => undefined);
     }, HEARTBEAT_INTERVAL * 1000);
   }
 

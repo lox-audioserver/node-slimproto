@@ -383,12 +383,15 @@ export class SlimClient {
     this._autoPlay = autostart;
 
     const isSyncGroup = parsed.searchParams.has('sync') && parsed.searchParams.has('expect');
+    const expectCount = isSyncGroup ? Number(parsed.searchParams.get('expect') ?? '0') : 0;
     // For sync-groups we want BUFFER_READY quickly so we can do coordinated unpause.
     // With MP3 @ 256kbps, 200KB threshold can take ~6s to fill; lowering keeps groups snappy.
-    const thresholdKb = isSyncGroup ? 64 : 200;
+    const thresholdKb = isSyncGroup ? (expectCount === 1 ? 32 : 64) : 200;
     // For sync-groups we prefer a bit more output buffer to avoid early underruns,
     // especially with lossless streams or weaker WiFi links.
-    const outputThreshold = isSyncGroup ? 50 : 20;
+    // However, `expect=1` is also used for single-player "alert" playback, where startup
+    // latency matters more than underrun protection. Keep output buffering near zero there.
+    const outputThreshold = isSyncGroup ? (expectCount === 1 ? 0 : 50) : 20;
 
     await this.sendStrm({
       command: 's',
